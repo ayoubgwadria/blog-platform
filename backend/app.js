@@ -3,12 +3,14 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const connectDB = require('./config/db');
 const cors = require('cors');
 const authRouter = require ('./routes/authRoutes')
 const adminRoutes  = require('./routes/adminRoutes')
+const articleRoutes = require('./routes/articleRoutes')
 var app = express();
 
 
@@ -23,6 +25,7 @@ app.use('/api', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRoutes );
+app.use('/api/article',articleRoutes)
 
 
 connectDB();
