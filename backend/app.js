@@ -8,6 +8,7 @@ var usersRouter = require('./routes/users');
 const connectDB = require('./config/db');
 const cors = require('cors');
 const authRouter = require ('./routes/authRoutes')
+const adminRoutes  = require('./routes/adminRoutes')
 var app = express();
 
 
@@ -21,6 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/admin', adminRoutes );
 
 
 connectDB();
