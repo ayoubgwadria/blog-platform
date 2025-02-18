@@ -7,6 +7,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const connectDB = require('./config/db');
 const cors = require('cors');
+const authRouter = require ('./routes/authRoutes')
 var app = express();
 
 
@@ -17,14 +18,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
+app.use('/api', indexRouter);
 app.use('/users', usersRouter);
+app.use('/api/auth', authRouter);
 
 
 connectDB();
 
-app.get('/api/health',(req,res)=>{
-    res.json({status:'api ok'});
+app.use((req, res) => {
+    res.status(404).json({ message: 'Endpoint non trouvé' });
 });
 
 
