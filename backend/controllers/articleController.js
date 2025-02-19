@@ -23,7 +23,8 @@ exports.getArticles = async (req, res) => {
         .populate("author", "email role")
         .sort("-createdAt")
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .cache(30),
       Article.countDocuments(),
     ]);
 
