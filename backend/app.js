@@ -2,31 +2,40 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
-
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var app = express();
+
 const connectDB = require('./config/db');
 const cors = require('cors');
 const authRouter = require ('./routes/authRoutes')
 const adminRoutes  = require('./routes/adminRoutes')
 const articleRoutes = require('./routes/articleRoutes')
-var app = express();
+const helmet = require('helmet');
+const commentRoutes = require('./routes/commentRoutes');
+const rateLimiter = require('./middleware/rateLimiter');
+
+
+
 
 
 app.use(cors({origin : 'http://localhost:4200'}));
+app.use(helmet());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(rateLimiter);
 
 app.use('/api', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRoutes );
-app.use('/api/article',articleRoutes)
+app.use('/api/article',articleRoutes);
+app.use('/api/comment', commentRoutes);
 
+require('./server/wsServer');
 
 connectDB();
 
