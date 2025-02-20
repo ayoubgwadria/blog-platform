@@ -1,0 +1,62 @@
+<div class="article-container">
+    <h1>Articles</h1>
+  
+    <button class="create-article-btn" (click)="openCreateArticleModal()">Create New Article</button>
+  
+    <div *ngIf="articles && articles.length > 0; else noArticles">
+      <div *ngFor="let article of articles" class="article-item">
+        <h2>{{ article.title }}</h2>
+        <p>{{ article.content | slice:0:100 }}...</p>
+        <div class="article-actions">
+          <button (click)="openEditArticleModal(article)">Edit</button>
+          <button (click)="deleteArticle(article._id)">Delete</button>
+        </div>
+      </div>
+  
+      <div class="pagination-controls">
+        <button (click)="changePage('previous')" [disabled]="currentPage === 1">Previous</button>
+        <span>Page {{ currentPage }}</span>
+        <button (click)="changePage('next')">Next</button>
+      </div>
+    </div>
+  
+    <ng-template #noArticles>
+      <p>No articles available. Please create one.</p>
+    </ng-template>
+  
+    <div class="modal" *ngIf="isCreateArticleModalOpen">
+      <div class="modal-content">
+        <span class="close-btn" (click)="closeCreateArticleModal()">&times;</span>
+        <h2>Create Article</h2>
+        <form (ngSubmit)="submitCreateArticle()">
+          <label for="title">Title:</label>
+          <input type="text" id="title" [(ngModel)]="newArticle.title" name="title" required />
+  
+          <label for="content">Content:</label>
+          <textarea id="content" [(ngModel)]="newArticle.content" name="content" required></textarea>
+  
+          <button type="submit" [disabled]="!newArticle.title || !newArticle.content">
+            {{ isLoading ? 'Creating...' : 'Submit' }}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" *ngIf="isEditArticleModalOpen">
+      <div class="modal-content">
+        <span class="close-btn" (click)="closeEditArticleModal()">&times;</span>
+        <h2>Edit Article</h2>
+        <form (ngSubmit)="submitEditArticle()">
+          <label for="edit-title">Title:</label>
+          <input type="text" id="edit-title" [(ngModel)]="editArticle.title" name="edit-title" required />
+  
+          <label for="edit-content">Content:</label>
+          <textarea id="edit-content" [(ngModel)]="editArticle.content" name="edit-content" required></textarea>
+  
+          <button type="submit" [disabled]="!editArticle.title || !editArticle.content">
+            {{ isLoading ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>

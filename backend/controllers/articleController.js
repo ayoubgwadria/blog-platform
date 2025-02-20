@@ -18,15 +18,18 @@ exports.getArticles = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
+    console.log(`Fetching articles - Page: ${page}, Limit: ${limit}, Skip: ${skip}`);
+
     const [articles, count] = await Promise.all([
       Article.find()
         .populate("author", "email role")
         .sort("-createdAt")
         .skip(skip)
-        .limit(limit)
-        .cache(30),
+        .limit(limit),
       Article.countDocuments(),
     ]);
+
+    console.log(`Articles fetched: ${articles.length}, Total count: ${count}`);
 
     res.json({
       data: articles,
@@ -38,9 +41,11 @@ exports.getArticles = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error('Error fetching articles:', error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 exports.updateArticle = async (req, res) => {
   try {

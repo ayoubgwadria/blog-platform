@@ -1,0 +1,9 @@
+<nav class="navbar">
+    <div class="logo">Blog-Plateform</div>
+    <ul class="nav-links">
+        <li><a routerLink="/">Home</a></li>
+        <li *ngIf="!isLoggedIn() && !isLoginPage"><a routerLink="/login">Login</a></li>
+        <li *ngIf="isLoginPage"><a routerLink="/register">Sign Up</a></li>
+        <li *ngIf="isLoggedIn()" (click)="logout()" class="logout-btn">Logout</li>
+    </ul>
+</nav>

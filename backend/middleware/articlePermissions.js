@@ -1,3 +1,5 @@
+const Article = require("../models/Article");
+
 exports.articleAuth = {
     create: (req, res, next) => {
       if (!['writer', 'editor', 'admin'].includes(req.user.role)) {
