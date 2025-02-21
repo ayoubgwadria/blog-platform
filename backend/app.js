@@ -14,8 +14,20 @@ const articleRoutes = require('./routes/articleRoutes')
 const helmet = require('helmet');
 const commentRoutes = require('./routes/commentRoutes');
 const rateLimiter = require('./middleware/rateLimiter');
+const { setupCommentNamespace } = require('./sockets/comments');
+var http = require('http');
+var socketIo = require('socket.io');
 
 
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: 'http://localhost:4200', 
+    methods: ['GET', 'POST']
+  }
+});
+const commentNamespace = io.of('/comments');
+setupCommentNamespace(commentNamespace);
 
 
 
@@ -45,6 +57,6 @@ app.use((req, res) => {
 
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, ()=> console.log(`server is running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
 
 module.exports = app;

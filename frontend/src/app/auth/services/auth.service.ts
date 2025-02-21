@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Router } from '@angular/router'; 
+import { authGuard } from 'src/app/core/guards/auth.guard';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,7 @@ export class AuthService {
   private userSubject = new BehaviorSubject<any>(null);
   public user = this.userSubject.asObservable();
   
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router , private authGuard:authGuard) {}
 
   register(user: { email: string; password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, user);
@@ -48,11 +49,26 @@ export class AuthService {
       error: () => this.clearSession(),
     });
   }
+  getCurrentUser():Observable<any>{
+    const accessToken = localStorage.getItem('accessToken');
+    if (accessToken) {
+      const user = this.authGuard.decodeUserData(accessToken) as any;
+      if (!user) {
+        throw new Error('User data is null');
+      }
+      const userId = (user as any).userId;
+      return this.http.get(`${this.apiUrl}/user/${userId}`, { headers: { Authorization: `Bearer ${accessToken}` } });
+    } else {
+      throw new Error('Access token is null');
+    }
+  }
 
   isLoggedIn(): boolean {
     const token = localStorage.getItem('accessToken');
     return !!token;
   }
+
+
 
   private clearSession(): void {
     localStorage.removeItem('accessToken');

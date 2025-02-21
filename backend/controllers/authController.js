@@ -64,3 +64,19 @@ exports.logout = (req, res) => {
   addToDenylist(token);
   res.json({ message: "Déconnexion réussie" });
 };
+
+exports.getUserById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId).select("-password -refreshToken");
+
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({ message: "Erreur lors de la récupération de l'utilisateur" });
+  }
+};
+

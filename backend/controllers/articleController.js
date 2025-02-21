@@ -23,6 +23,20 @@ exports.getArticles = async (req, res) => {
     const [articles, count] = await Promise.all([
       Article.find()
         .populate("author", "email role")
+        .populate({
+          path: "comments",
+          populate: [
+            { path: "author", select: "email role" }, 
+            { 
+              path: "parentComment", 
+              populate: { path: "author", select: "email role" } 
+            },
+            { 
+              path: "replies",  
+              populate: { path: "author", select: "email role" } 
+            },
+          ],
+        })
         .sort("-createdAt")
         .skip(skip)
         .limit(limit),
@@ -41,10 +55,11 @@ exports.getArticles = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching articles:', error);
+    console.error("Error fetching articles:", error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 exports.updateArticle = async (req, res) => {

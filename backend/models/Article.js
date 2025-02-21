@@ -41,7 +41,11 @@ const articleSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  comments: [{ 
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Comment"
+  }] 
 });
 
 articleSchema.index({ title: 1 });
@@ -51,4 +55,4 @@ articleSchema.index({ createdAt: -1 });
 articleSchema.set("cache", true);
 articleSchema.set("ttl", 30);
 
-module.exports = mongoose.model("Article", articleSchema);
+module.exports = mongoose.models.Article || mongoose.model("Article", articleSchema);

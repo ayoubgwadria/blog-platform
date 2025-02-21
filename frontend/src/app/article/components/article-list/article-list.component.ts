@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ArticleService } from '../../services/article.service';
+import { CommentService } from '../../services/comment.service';
+import { AuthService } from 'src/app/auth/services/auth.service';
 
 @Component({
   selector: 'app-article-list',
@@ -16,8 +18,15 @@ export class ArticleListComponent implements OnInit {
   editArticle = { _id: '', title: '', content: '' };
   errorMessage: string | null = null;
   isLoading: boolean = false;
+  newComment = { articleId: '', content: '', authorId: '' };
+  replyComment = { parentCommentId: '', content: '', authorId: '' };
+  articleComments: { [key: string]: string } = {};
+  commentReplies: { [key: string]: string } = {};
+  isCommentLoading = false;
+  isReplyLoading = false;
 
-  constructor(private articleService: ArticleService) {}
+
+  constructor(private articleService: ArticleService,private commentService:CommentService, private authService:AuthService) {}
 
   ngOnInit(): void {
     this.fetchArticles();
@@ -118,4 +127,73 @@ export class ArticleListComponent implements OnInit {
     direction === 'previous' ? this.currentPage-- : this.currentPage++;
     this.fetchArticles();
   }
+
+  addComment(articleId: string): void {
+    const content = this.articleComments[articleId]?.trim();
+    if (!content) return;
+
+    this.authService.getCurrentUser().subscribe(user => {
+      if (!user) {
+        alert('Please login to comment');
+        return;
+      }
+      const authorId = user._id;
+      this.isCommentLoading = true;
+      this.commentService.addComment({
+        articleId,
+        content,
+        authorId
+      }).subscribe({
+        next: () => {
+          this.fetchArticles();
+          this.articleComments[articleId] = '';
+        },
+        error: (err) => {
+          console.error('Error adding comment:', err);
+        },
+        complete: () => {
+          this.isCommentLoading = false;
+        }
+      });
+    });
+  }
+
+  addReply(commentId: string, articleId: string): void {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      console.error('No access token found');
+      return;
+    }
+
+   
+    this.authService.getCurrentUser().subscribe(user => {
+      if (!user) {
+        alert('Please login to reply');
+        return;
+      }
+      const authorId = user._id;
+      const content = this.commentReplies[commentId]?.trim();
+      if (!content) return;
+
+      this.isReplyLoading = true;
+      this.commentService.replyToComment({
+        parentCommentId: commentId,
+        content,
+        authorId
+      }).subscribe({
+        next: () => {
+          this.fetchArticles();
+          this.commentReplies[commentId] = '';
+        },
+        error: (err) => {
+          console.error('Error adding reply:', err);
+        },
+        complete: () => {
+          this.isReplyLoading = false;
+        }
+      });
+    });
+  }
+
+
 }

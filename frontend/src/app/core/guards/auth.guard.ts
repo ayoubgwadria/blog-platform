@@ -8,7 +8,7 @@ import { jwtDecode } from 'jwt-decode';
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
+export class authGuard {
   private apiUrl = 'http://localhost:5000/api/auth';
   private userSubject = new BehaviorSubject<any>(null);
   public user = this.userSubject.asObservable();
@@ -65,9 +65,9 @@ export class AuthService {
     return null;
   }
 
-  private decodeUserData(token: string): void {
+   decodeUserData(token: string): void {
     const decodedToken: any = jwtDecode(token);
-    this.userSubject.next(decodedToken); 
+    return decodedToken;
   }
 
   private clearSession(): void {
