@@ -13,16 +13,5 @@ export class CreateArticleComponent {
 
   constructor(private articleService: ArticleService, private router: Router) {}
 
-  createArticle() {
-    const article = { title: this.title, content: this.content };
-    this.articleService.createArticle(article).subscribe({
-      next: (response) => {
-        console.log('Article created', response);
-        this.router.navigate(['/']);
-      },
-      error: (err) => {
-        console.error('Error creating article', err);
-      }
-    });
-  }
+
 }

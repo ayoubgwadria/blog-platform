@@ -1,55 +1,63 @@
 const Comment = require('../models/Comment');
+const Article = require('../models/Article');
 
 const setupCommentNamespace = (namespace) => {
   namespace.on('connection', (socket) => {
     console.log('New client connected to /comments');
 
-    // Événement : Création d'un commentaire
     socket.on('comment:create', async (data) => {
       try {
         const { articleId, content, authorId, parentCommentId } = data;
 
-        // Créer le commentaire
         const comment = await Comment.create({
           article: articleId,
           content,
           author: authorId,
-          parentComment: parentCommentId
+          parentComment: parentCommentId,
         });
 
-        // Broadcast à l'auteur de l'article
-        namespace.emit(`article:${articleId}:comment`, comment);
+        if (!parentCommentId) {
+          await Article.findByIdAndUpdate(articleId, {
+            $push: { comments: comment._id },
+          });
+        }
 
-        // Répondre au client
+        namespace.emit(`article:${articleId}:comment`, comment);
         socket.emit('comment:created', comment);
       } catch (error) {
         socket.emit('comment:error', { message: error.message });
       }
     });
 
-    // Événement : Réponse à un commentaire
     socket.on('comment:nested', async (data) => {
       try {
         const { parentCommentId, content, authorId } = data;
 
-        // Créer le commentaire imbriqué
         const comment = await Comment.create({
           parentComment: parentCommentId,
           content,
-          author: authorId
+          author: authorId,
         });
 
-        // Broadcast au parent
-        namespace.emit(`comment:${parentCommentId}:reply`, comment);
+        const parentComment = await Comment.findById(parentCommentId)
+          .populate('article')
+          .exec();
 
-        // Répondre au client
+        await Comment.findByIdAndUpdate(parentCommentId, {
+          $push: { replies: comment._id },
+        });
+
+        namespace.emit(`article:${parentComment.article._id}:comment`, {
+          ...comment.toObject(),
+          parentCommentId,
+        });
+
         socket.emit('comment:reply:created', comment);
       } catch (error) {
         socket.emit('comment:error', { message: error.message });
       }
     });
 
-    // Déconnexion
     socket.on('disconnect', () => {
       console.log('Client disconnected from /comments');
     });

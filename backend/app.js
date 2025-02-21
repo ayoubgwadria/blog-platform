@@ -17,6 +17,7 @@ const rateLimiter = require('./middleware/rateLimiter');
 const { setupCommentNamespace } = require('./sockets/comments');
 var http = require('http');
 var socketIo = require('socket.io');
+const { setupArticleNamespace } = require('./sockets/article');
 
 
 const server = http.createServer(app);
@@ -25,12 +26,14 @@ const io = socketIo(server, {
     origin: 'http://localhost:4200', 
     methods: ['GET', 'POST']
   }
-});
+});setupArticleNamespace
 const commentNamespace = io.of('/comments');
 setupCommentNamespace(commentNamespace);
 
 
-
+const articleNamespace = io.of('/articles');
+setupArticleNamespace(articleNamespace);
+ 
 app.use(cors({origin : 'http://localhost:4200'}));
 app.use(helmet());
 app.use(logger('dev'));

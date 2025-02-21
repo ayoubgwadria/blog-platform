@@ -1,31 +1,31 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-
-interface CommentData {
-  articleId?: string;
-  content: string;
-  authorId: string;
-  parentCommentId?: string;
-}
+import { io, Socket } from 'socket.io-client';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CommentService {
-  private baseUrl = 'http://localhost:5000/api/comment';
+  private socket: Socket;
 
-  constructor(private http: HttpClient) {}
-
-  addComment(commentData: CommentData): Observable<any> {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.post(`${this.baseUrl}/add`, commentData,{headers});
+  constructor() {
+    this.socket = io('http://localhost:5000/comments', {
+      auth: { token: localStorage.getItem('accessToken') },
+    });
   }
 
-  replyToComment(replyData: CommentData): Observable<any> {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.post(`${this.baseUrl}/reply`, replyData,{headers});
+  sendComment(commentData: any): void {
+    this.socket.emit('comment:create', commentData);
+  }
+
+  sendReply(replyData: any): void {
+    this.socket.emit('comment:nested', replyData);
+  }
+
+  onNewComment(articleId: string, callback: (comment: any) => void): void {
+    this.socket.on(`article:${articleId}:comment`, callback);
+  }
+
+  disconnect(): void {
+    this.socket.disconnect();
   }
 }

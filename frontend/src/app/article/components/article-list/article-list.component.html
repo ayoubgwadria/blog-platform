@@ -7,7 +7,7 @@
 
   <div *ngIf="articles && articles.length > 0; else noArticles">
     <div *ngFor="let article of articles" class="article-item">
-      <p>By: {{ article.author.email }}</p>
+      <!-- <p>By:{{ article.author.email }}</p> -->
       <h2>{{ article.title }}</h2>
       <p>{{ article.content | slice : 0 : 100 }}...</p>
       <div class="article-actions">

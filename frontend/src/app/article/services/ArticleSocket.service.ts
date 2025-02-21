@@ -1,5 +1,12 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { io, Socket } from 'socket.io-client';
+
+interface ArticleData {
+  title: string;
+  content: string;
+  authorId: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -7,13 +14,11 @@ import { io, Socket } from 'socket.io-client';
 export class ArticleService {
   private socket: Socket;
 
-  constructor() {
-    this.socket = io('http://localhost:5000/articles', {
-      auth: { token: localStorage.getItem('accessToken') },
-    });
+  constructor(private http: HttpClient) {
+    this.socket = io('http://localhost:5000/articles');
   }
 
-  fetchArticlesRealTime(page: number = 1, limit: number = 10): void {
+  fetchArticles(page: number, limit: number): void {
     this.socket.emit('article:get', { page, limit });
   }
 
@@ -25,27 +30,28 @@ export class ArticleService {
     this.socket.on('article:error', callback);
   }
 
-  createArticle(article: any): void {
-    this.socket.emit('article:create', article);
+  createArticle(articleData: ArticleData): void {
+    this.socket.emit('article:create', articleData);
   }
 
   onArticleCreated(callback: (article: any) => void): void {
     this.socket.on('article:create', callback);
   }
 
-  updateArticle(id: string, article: any): void {
-    this.socket.emit('article:update', { id, article });
+  updateArticle(articleId: string, articleData: Partial<ArticleData>): void {
+    const data = { id: articleId, article: articleData };
+    this.socket.emit('article:update', data);
   }
 
   onArticleUpdated(callback: (article: any) => void): void {
     this.socket.on('article:update', callback);
   }
 
-  deleteArticle(id: string): void {
-    this.socket.emit('article:delete', id);
+  deleteArticle(articleId: string): void {
+    this.socket.emit('article:delete', articleId);
   }
 
-  onArticleDeleted(callback: (id: string) => void): void {
+  onArticleDeleted(callback: (message: string) => void): void {
     this.socket.on('article:delete', callback);
   }
 
